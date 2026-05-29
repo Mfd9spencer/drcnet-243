@@ -1,12 +1,25 @@
-FROM alpine:3.20
+FROM python:3.11-alpine
 
-LABEL org.opencontainers.image.title="drcnet-243"
-LABEL org.opencontainers.image.description="Custom Docker image for Docker Hub"
-LABEL org.opencontainers.image.vendor="lubunza"
-
-RUN apk add --no-cache bash ca-certificates tzdata
 WORKDIR /app
 
 COPY patch.txt /app/patch.txt
 
-CMD ["sh", "-c", "echo 'Patch:' && cat /app/patch.txt && sleep infinity"]
+RUN printf '%s
+' \
+'from http.server import BaseHTTPRequestHandler, HTTPServer' \
+'import os' \
+'' \
+'PORT = int(os.environ.get("PORT", "8080"))' \
+'' \
+'class Handler(BaseHTTPRequestHandler):' \
+'    def do_GET(self):' \
+'        self.send_response(200)' \
+'        self.send_header("Content-type", "text/plain; charset=utf-8")' \
+'        self.end_headers()' \
+'        with open("/app/patch.txt", "rb") as f:' \
+'            self.wfile.write(f.read())' \
+'' \
+'HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()' \
+> /app/app.py
+
+CMD ["python", "/app/app.py"]
