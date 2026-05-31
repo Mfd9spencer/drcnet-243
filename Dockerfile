@@ -1,11 +1,14 @@
-FROM teddysun/xray:latest
+FROM alpine:latest
 
-# Copier le fichier de configuration dans le conteneur
-COPY config.json /etc/xray/config.json
+# Installation de V2Ray comme dans ton script
+RUN apk add --no-cache v2ray
 
-# Exposer le port par défaut de Cloud Run
+# Copie de la configuration
+COPY config.json /etc/v2ray/config.json
+
+# Port requis par Google Cloud Run
 ENV PORT=8080
 EXPOSE 8080
 
-# Lancer Xray avec le fichier config
-CMD ["xray", "-config", "/etc/xray/config.json"]
+# Lancement
+CMD ["v2ray", "run", "-config", "/etc/v2ray/config.json"]
