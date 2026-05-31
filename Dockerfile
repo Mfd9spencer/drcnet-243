@@ -1,8 +1,11 @@
-FROM python:3.11-alpine
+FROM teddysun/xray:latest
 
-WORKDIR /app
+# Copier le fichier de configuration dans le conteneur
+COPY config.json /etc/xray/config.json
 
-COPY patch.txt /app/patch.txt
-COPY app.py /app/app.py
+# Exposer le port par défaut de Cloud Run
+ENV PORT=8080
+EXPOSE 8080
 
-CMD ["python", "/app/app.py"]
+# Lancer Xray avec le fichier config
+CMD ["xray", "-config", "/etc/xray/config.json"]
